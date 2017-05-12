@@ -1,7 +1,9 @@
 ---
 title: "MLM Project 5"
+author: "Jemar Bather & Zarni Htet [with Martha Moreno, Sarah Rosenbach, James Wu]"
 output:
   word_document: default
+  pdf_document: default
   html_notebook: default
 ---
 
@@ -17,6 +19,7 @@ attach(cc.data)
 cc.data$math1st <- mathkind + mathgain
 ```
 
+$$ MATH1ST_{ijk} = b_0 + b_1HOUSEPOV_{k} + b_2YEARSTEA_{jk} + b_3MATHPREP_{jk} + b_4MATHKNOW_{jk} + b_5SES_{ijk} + b_6SEX_{ijk} + b_7MINORITY_{ijk} + \eta_{jk} + \zeta_{k} + \varepsilon_{ijk} $$ With $\zeta_{k}$ ~ N(0,$\sigma^2_{\zeta}$), $\eta_{jk}$ ~ N(0,$\sigma^2_{\eta}$), and $\varepsilon_{ijk}$ ~ N(0,$\sigma^2_{\varepsilon}$), independent of one another.
 ```{r}
 require(lme4)
 require(lmerTest)
@@ -116,7 +119,7 @@ attach(dat)
 ```
 
 
-
+$$ MATH1ST_{ijk} = b_0 + b_1HOUSEPOV_{k} + b_2YEARSTEA_{jk} + b_3MATHPREP_{jk} + b_4MATHKNOW_{jk} + b_5SES_{ijk} + b_6SEX_{ijk} + b_7MINORITY_{ijk} + \eta_{jk} + \zeta_{k} + \zeta_{1k}MINORITY_{ijk} + \varepsilon_{ijk} $$With $\zeta_{k}$ ~ N(0,$\sigma^2_{\zeta_0}$), $\zeta_{1k}$ ~ N(0,$\sigma^2_{\zeta_1}$), $\eta_{jk}$ ~ N(0,$\sigma^2_{\eta}$), and $\varepsilon_{ijk}$ ~ N(0,$\sigma^2_{\varepsilon}$), BUT NOW $corr(\zeta_{0k},\zeta_{1k})$ = $\rho_{\zeta_{0}\zeta_{1}}$, which may not be zero, and all other pairs of random terms are independent of one another.
 ```{r}
 #The model is slightly more complicated with an uncorrelated random slope school level variability of minority.
 #options(digits = 5)
