@@ -1,17 +1,12 @@
 ---
 title: "R Notebook"
 output:
-<<<<<<< HEAD
   word_document: default
   html_notebook: default
-=======
-  html_notebook: default
-  word_document: default
->>>>>>> origin/master
 ---
 
 ```{r}
-library(readr)
+#library(readr)
 dat <- read.csv("../classroom.csv")
 cc.data <- dat[(complete.cases(dat)),]
 ```
@@ -25,6 +20,7 @@ cc.data$math1st <- mathkind + mathgain
 ```{r}
 #require(lme4)
 #require(lmerTest)
+#options(digits = 5)
 fit1 <- lmer(math1st ~ housepov + yearstea + mathprep + mathknow + ses + sex + minority + (1|schoolid/classid), data=cc.data)
 summary(fit1)
 ```
@@ -69,39 +65,28 @@ resFE_RE <- math1st - pred.yhat - cc.data$zeta0 - cc.data$eta0 #This accounts fo
 
 * show that these new residuals, resFE_RE are MUCH LESS (if not completely un-) correlated within school 
 * using the same method as before (boxplot?)
+
+###Write Up Fix
+We expected a flatter because the random effects were removed from the residuals.
 ```{r}
-#We are expecting a flatter line but, the line is upward sloping. Come back to it as a group.
 ord2<-order(unlist(tapply(resFE_RE,schoolid,median)))
 boxplot(split(resFE_RE,schoolid)[ord2], main = "resFE_RE_BoxPlot 2")
 ```
 
-### Did we tag?
 *examine the two sets of BLUPs (for random effects zeta0 and eta0) for normality
 *first 'tag' a single value from each grouping (e.g., school or classroom) so that you only have 
 * as many BLUPs as the grouping factor (should be less of an issue in R)
 
-
 ```{r}
 plot(density(zeta0))
-qqnorm(zeta0)
-qqline(zeta0)
+qqnorm(zeta0, main = "zeta0")
+qqline(zeta0, col ="red")
 ```
 
 ```{r}
-plot(density(eta0))
-qqnorm(eta0)
-qqline(eta0)
+qqnorm(eta0, main = "eta0")
+qqline(eta0, col = "red")
 ```
-
-
-### Jemar & Zarni
-*if In a simpler setting, with no classroom level, if H0: \sigma^2_{\zeta_0}=0 were true, 
-* and you sampled 100 schools of size 10, what would be a potential expected estimate of \sigma_{\zeta_0} 
-* if you know that \sigma_{\epsilon}=1 ?  HINT: the Central Limit Theorem applies.  Simulate to find out.
-```{r}
-
-```
-
 
 *now reload the data and fit a slightly more complicated model:
 use "classroom.dta"
@@ -121,7 +106,8 @@ est store M2
 #Come back and check (0+minority|schoolid) later
 ```{r}
 #The model is slightly more complicated with an uncorrelated random slope school level variability of minority.
-M2 <- lmer(math1st ~ housepov + yearstea + mathprep + mathknow + ses + sex + minority + (0+minority|schoolid) + (1|schoolid) + (1|classid))
+#options(digits = 5)
+M2 <- lmer(math1st ~ housepov + yearstea + mathprep + mathknow + ses + sex+ minority+ (minority|schoolid) + (1|classid))
 print(summary(M2))
 ```
 
@@ -130,8 +116,8 @@ idx.sch <- match(dat$schoolid, sort(unique(dat$schoolid)))
 idx.cls <- match(dat$classid, sort(unique(dat$classid))) 
 ```
 
-
 *manually construct the residual that removes only the 'fixed effects', call this residual: resFE
+
 ```{r}
 pred.yhat.2 <- predict(M2, re.form = ~0)
 ranefs <- ranef(M2)
@@ -154,25 +140,30 @@ boxplot(split(resFE.2,schoolid)[ord3], main = "resFE.2 Boxplot_3")
 * i) predict and save zeta0 AND zeta1 (you need to give them in reverse order in STATA - ask me why if you want)
 * ii) predit and save eta0
 * iii) generate a new residual, called resFE_RE which subtracts yhat, zeta0, MINORITY*zeta1 and eta0 
+
+
+We have tested the model on several machines and on some machines it is running 0.00 no matter what decimal place we set. Therefore, we have run the model on Danny's machine and grabbed his zeta1 for now.
+
+
+
 ```{r}
 ranerr <- ranef(M2)
 zeta0 <- ranerr$schoolid[,1]
 zeta1 <- ranerr$schoolid[,2] #It is the random slope of the minority intercept
 eta0 <- ranerr$classid[,1] #This is the random intercept for the classroom level.
 dat$zeta0 <- zeta0[idx.sch]
-dat$zeta1 <- zeta1[idx.sch]
+dat$zeta1 <- danny.zeta1$x[idx.sch]
 dat$eta0 <- eta0[idx.cls]
 resFE_RE.2 <- dat$math1st - (pred.yhat.2 + dat$zeta0 + (dat$minority * dat$zeta1) + dat$eta0)#This accounts for removing both fixed and random effects and the random effects are removed manually. Therefore, residuals should be less dependent than the previous one. Thus, we expect to see a flatter line.
 ```
 
 
-*      from the outcome
-
-### Jemar & Zarni
-## We can check this by subtracting the total sum off and the one which is greater will have a positive total slope? #Shoot an email to Marc on this
 
 * show that these new residuals, resFE_RE are MUCH LESS (if not completely un-) correlated within school 
 * using the same method as before (boxplot?)
+
+##Write in how it is flatter
+
 ```{r}
 ord4<-order(unlist(tapply(resFE_RE.2,schoolid,median)))
 boxplot(split(resFE_RE.2,schoolid)[ord4], main = "resFE_RE.2 Boxlot 4")
@@ -182,56 +173,25 @@ boxplot(split(resFE_RE.2,schoolid)[ord4], main = "resFE_RE.2 Boxlot 4")
 
 This is the BLUP for random intercept at the school level and for the most part, it appears to be normal except in the tails end.
 ```{r}
-qqnorm(zeta0)
-qqline(zeta0)
-```
-
-```{r}
-#Currently, we have found a random slope of zero for the minority. We will have to come back to this.
-qqnorm(zeta1)
-qqline(zeta1)
+qqnorm(zeta0, main = "Zeta0") #This is already tagged by schoolid
+qqline(zeta0, col = "red") #This is already tagged by schoolid
 ```
 
 The classroom level random intercept appears to be normal except in the tails end.
 ```{r}
-qqnorm(eta0)
-qqline(eta0)
+qqnorm(eta0, main = "eta0") #this is already tagged by classid
+qqline(eta0, col = "red") #this is already tagged by classid
 ```
-
-### Jemar & Zarni
-*first 'tag' a single value from each grouping (e.g., school or classroom) so that you only have 
-* as many BLUPs as the grouping factor (should be less of an issue in R)
-
-```{r}
-<<<<<<< HEAD
-require(lattice)
-xyplot(mathkind ~ ses | schoolid, data = dat[dat$schoolid < 13, ], type = c("p",
-"r")) #close enough
-=======
-#library(calibrate)
->>>>>>> origin/master
-```
-
-
-
 
 
 *plot zeta0 vs. zeta1 to see whether the estimated correlation is consistent with the observed. 
 * Use tag to subset as before
 
-
 ```{r}
-plot(jitter(zeta0), zeta1)
-text(zeta0, zeta1, labels=schoolid, cex= 0.7, pos=3)
-
-plot(jitter(zeta0[1:10], zeta1[1:10]))
-textxy(zeta0[1:10], zeta1[1:10], schoolid[1:10])
+plot(zeta0~zeta1, main = "Zeta 0 and Zeta 1 scatter plot")
 
 ```
 
-### Jemar & Zarni Much easier to figure out
-*track down those odd points in the scatterplot.  What schools are they?
-```{r}
 
 
-```
+
