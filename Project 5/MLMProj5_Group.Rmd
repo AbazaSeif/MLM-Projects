@@ -27,7 +27,7 @@ summary(fit1)
 
 *manually construct the residual that removes only the 'fixed effects'
 *hint: predict yhat, xb will generate the prediction for the outcome based on the fixed effects only
-* then subtract it from the outcome; call this residual: resFE
+*then subtract it from the outcome; call this residual: resFE
 ```{r}
 pred.yhat <- predict(fit1, re.form = ~0) #This ignore random effects
 resFE <- cc.data$math1st - pred.yhat 
@@ -76,7 +76,7 @@ boxplot(split(resFE_RE,schoolid)[ord2], main = "resFE_RE_BoxPlot 2")
 
 *examine the two sets of BLUPs (for random effects zeta0 and eta0) for normality
 *first 'tag' a single value from each grouping (e.g., school or classroom) so that you only have 
-* as many BLUPs as the grouping factor (should be less of an issue in R)
+*as many BLUPs as the grouping factor (should be less of an issue in R)
 
 
 If we examine the density and qqplot of the Zeta0 below, it's close to symmetric, but with seeminlgy heavy tail on left. 
@@ -117,10 +117,6 @@ attach(dat)
 
 
 
-mixed math1st housepov yearstea mathprep mathknow ses sex minority |||schoolid: minority, cov(un) || classid:, reml 
-est store M2
-
-#Come back and check (0+minority|schoolid) later
 ```{r}
 #The model is slightly more complicated with an uncorrelated random slope school level variability of minority.
 #options(digits = 5)
@@ -218,7 +214,7 @@ qqline(eta0, col = "red") #this is already tagged by classid
 
 
 *plot zeta0 vs. zeta1 to see whether the estimated correlation is consistent with the observed. 
-* Use tag to subset as before
+*Use tag to subset as before
 
 ```{r}
 plot(zeta0~zeta1, main = "Zeta 0 and Zeta 1 scatter plot")
